@@ -50,6 +50,13 @@ class Settings(BaseSettings):
     gemini_model: str = ""
     gemini_enabled: bool = False
 
+    # --- Auth ---
+    # Must be >= 32 bytes. A shorter/missing value makes PyJWT warn and
+    # weakens the HMAC, so security.py generates a random one at startup.
+    jwt_secret: str = ""
+    # Gate for creating the FIRST platform admin. Blank disables bootstrap.
+    admin_setup_key: str = ""
+
     # --- App ---
     cors_origins: str = "http://localhost:5173,http://localhost:5174"
     log_level: str = "INFO"

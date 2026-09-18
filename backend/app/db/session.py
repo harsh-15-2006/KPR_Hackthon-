@@ -27,10 +27,24 @@ class Base(DeclarativeBase):
 
 
 def _build_engine(url: str):
-    connect_args = (
-        {"check_same_thread": False} if url.startswith("sqlite") else {"connect_timeout": 10}
+    if url.startswith("sqlite"):
+        return create_engine(
+            url, connect_args={"check_same_thread": False}, pool_pre_ping=True, future=True
+        )
+    # Supabase's Supavisor pooler closes idle connections after a short
+    # timeout. pool_pre_ping catches a dead connection at checkout, but a
+    # connection recycled by the server mid-session still raises
+    # "server closed the connection unexpectedly". Retiring connections
+    # ourselves, well before the pooler does, prevents that.
+    return create_engine(
+        url,
+        connect_args={"connect_timeout": 10, "keepalives": 1, "keepalives_idle": 30},
+        pool_pre_ping=True,
+        pool_recycle=240,      # retire after 4 minutes, under the pooler's timeout
+        pool_size=5,
+        max_overflow=5,
+        future=True,
     )
-    return create_engine(url, connect_args=connect_args, pool_pre_ping=True, future=True)
 
 
 # Engine/session are module-level but REBINDABLE, so startup can fall back.
@@ -90,7 +104,7 @@ def init_db() -> None:
             )
             _fallback(reason, log_detail=detail or "unknown error")
 
-    from app.models import action, emission, operational, optimization  # noqa: F401
+    from app.models import action, auth, emission, operational, optimization  # noqa: F401
 
     try:
         Base.metadata.create_all(bind=engine)

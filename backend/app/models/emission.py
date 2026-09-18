@@ -16,6 +16,8 @@ class EmissionRecord(Base):
     __tablename__ = "emission_records"
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    # Tenancy partition. Every query is filtered on this.
+    scope_key: Mapped[str] = mapped_column(String(128), nullable=False, default="default", index=True)
     source: Mapped[str] = mapped_column(String(32), index=True, nullable=False)
     activity_type: Mapped[str] = mapped_column(String(128), nullable=False)
     activity_value: Mapped[float] = mapped_column(Float, nullable=False)

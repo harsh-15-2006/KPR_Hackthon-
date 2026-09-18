@@ -9,7 +9,7 @@ from fastapi.responses import JSONResponse
 from app.core.config import get_settings
 from app.core.logging import configure_logging
 from app.db.session import SessionLocal, db_status, init_db
-from app.routes import actions, ai, emissions, hotspots, optimization, reports, trust
+from app.routes import actions, ai, auth, emissions, hotspots, optimization, reports, trust
 from app.services.action_service import seed_actions_if_empty
 
 settings = get_settings()
@@ -77,6 +77,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.include_router(auth.router)
 app.include_router(emissions.router)
 app.include_router(hotspots.router)
 app.include_router(actions.router)

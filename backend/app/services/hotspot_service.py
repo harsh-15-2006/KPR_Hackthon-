@@ -46,8 +46,8 @@ def _normalise_to_kg(co2e: float, unit: str) -> float:
     return co2e * factor
 
 
-def build_summary(db: Session) -> HotspotSummary:
-    records = list_records(db)
+def build_summary(db: Session, scope_key: str | None = None) -> HotspotSummary:
+    records = list_records(db, scope_key=scope_key)
 
     totals: dict[str, float] = {s: 0.0 for s in SOURCES}
     counts: dict[str, int] = {s: 0 for s in SOURCES}

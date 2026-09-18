@@ -7,6 +7,7 @@ from pydantic import ValidationError
 from sqlalchemy.orm import Session
 
 from app.config import get_settings
+from app.core.deps import resolve_scope
 from app.db.session import get_db
 from app.schemas.emission import (
     EmissionCalculateRequest,
@@ -43,9 +44,15 @@ def calculate(
     payload: EmissionCalculateRequest,
     demo: bool = Query(default=False, description="Use Demo Mode instead of Climatiq"),
     db: Session = Depends(get_db),
+    scope: str = Depends(resolve_scope),
 ) -> EmissionRecordOut:
+    if scope == "__ALL__":
+        raise HTTPException(
+            status_code=400,
+            detail="Select a company (scope_key) before adding data as an administrator.",
+        )
     try:
-        record = emission_service.calculate_and_store(db, payload, demo_mode=demo)
+        record = emission_service.calculate_and_store(db, payload, demo_mode=demo, scope_key=scope)
     except ValueError as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
     except EmissionCalculationError as exc:
@@ -57,12 +64,13 @@ def calculate(
 def list_emissions(
     source: str | None = Query(default=None),
     db: Session = Depends(get_db),
+    scope: str = Depends(resolve_scope),
 ) -> list[EmissionRecordOut]:
     if source and not is_valid_source(source):
         raise HTTPException(status_code=422, detail="Unknown source '" + source + "'.")
     return [
         EmissionRecordOut.model_validate(r)
-        for r in emission_service.list_records(db, source)
+        for r in emission_service.list_records(db, source, scope_key=scope)
     ]
 
 
@@ -157,6 +165,7 @@ def import_rows(
     rows: list[EmissionCalculateRequest],
     demo: bool = Query(default=False),
     db: Session = Depends(get_db),
+    scope: str = Depends(resolve_scope),
 ) -> list[EmissionRecordOut]:
     """Import confirmed rows. Called only after the user confirms the preview."""
     if not rows:
@@ -164,7 +173,9 @@ def import_rows(
     created = []
     for row in rows:
         try:
-            created.append(emission_service.calculate_and_store(db, row, demo_mode=demo))
+            created.append(
+                emission_service.calculate_and_store(db, row, demo_mode=demo, scope_key=scope)
+            )
         except (ValueError, EmissionCalculationError) as exc:
             raise HTTPException(
                 status_code=502,
@@ -174,8 +185,10 @@ def import_rows(
 
 
 @router.delete("", status_code=200)
-def clear_emissions(db: Session = Depends(get_db)) -> dict:
-    return {"deleted": emission_service.delete_all(db)}
+def clear_emissions(
+    db: Session = Depends(get_db), scope: str = Depends(resolve_scope)
+) -> dict:
+    return {"deleted": emission_service.delete_all(db, scope_key=scope)}
 
 
 @router.get("/config")

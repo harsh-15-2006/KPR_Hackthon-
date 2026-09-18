@@ -233,8 +233,14 @@ def run_to_dict(db: Session, run: OptimizationRun) -> dict[str, Any]:
     }
 
 
-def latest_run(db: Session, baseline_only: bool = True) -> OptimizationRun | None:
-    stmt = select(OptimizationRun).order_by(OptimizationRun.created_at.desc(), OptimizationRun.id.desc())
+def latest_run(
+    db: Session, baseline_only: bool = True, scope_key: str | None = None
+) -> OptimizationRun | None:
+    stmt = select(OptimizationRun).order_by(
+        OptimizationRun.created_at.desc(), OptimizationRun.id.desc()
+    )
+    if scope_key and scope_key != "__ALL__":
+        stmt = stmt.where(OptimizationRun.scope_key == scope_key)
     if baseline_only:
         stmt = stmt.where(OptimizationRun.is_baseline.is_(True))
     return db.scalars(stmt.limit(1)).first()

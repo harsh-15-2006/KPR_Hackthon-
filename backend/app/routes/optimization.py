@@ -8,6 +8,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
+from app.core.deps import resolve_scope
 from app.db.session import get_db
 from app.services import optimization_service as opt
 
@@ -36,12 +37,20 @@ class ReoptimizeRequest(BaseModel):
 
 
 @router.post("/optimization/run")
-def run_optimization(payload: OptimizeRequest, db: Session = Depends(get_db)) -> dict:
+def run_optimization(
+    payload: OptimizeRequest,
+    db: Session = Depends(get_db),
+    scope: str = Depends(resolve_scope),
+) -> dict:
     """Solve the budget-constrained allocation. Persists every run."""
+    if scope == "__ALL__":
+        raise HTTPException(
+            status_code=400, detail="Select a company before running an optimization."
+        )
     run = opt.run_optimization(
         db,
         budget=payload.budget,
-        scope_key=payload.scope_key,
+        scope_key=scope,
         trigger_reason=payload.trigger_reason,
         is_baseline=True,
     )
@@ -49,8 +58,10 @@ def run_optimization(payload: OptimizeRequest, db: Session = Depends(get_db)) ->
 
 
 @router.get("/optimization/latest")
-def latest(db: Session = Depends(get_db)) -> dict:
-    run = opt.latest_run(db, baseline_only=True)
+def latest(
+    db: Session = Depends(get_db), scope: str = Depends(resolve_scope)
+) -> dict:
+    run = opt.latest_run(db, baseline_only=True, scope_key=scope)
     if run is None:
         return {"run_id": None, "message": "No optimization has been run yet."}
     return opt.run_to_dict(db, run)

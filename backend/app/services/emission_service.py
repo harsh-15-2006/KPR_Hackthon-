@@ -18,7 +18,8 @@ class EmissionCalculationError(Exception):
 
 
 def calculate_and_store(
-    db: Session, payload: EmissionCalculateRequest, demo_mode: bool = False
+    db: Session, payload: EmissionCalculateRequest, demo_mode: bool = False,
+    scope_key: str = "default",
 ) -> EmissionRecord:
     payload.validate_unit_for_source()
 
@@ -45,6 +46,7 @@ def calculate_and_store(
             raise EmissionCalculationError(exc.message) from exc
 
     record = EmissionRecord(
+        scope_key=scope_key,
         source=payload.source,
         activity_type=payload.activity_type,
         activity_value=payload.activity_value,
@@ -67,15 +69,24 @@ def calculate_and_store(
     return record
 
 
-def list_records(db: Session, source: str | None = None) -> list[EmissionRecord]:
+def list_records(
+    db: Session, source: str | None = None, scope_key: str | None = None
+) -> list[EmissionRecord]:
+    """Scoped read. `__ALL__` is the admin's platform-wide view."""
     stmt = select(EmissionRecord).order_by(EmissionRecord.created_at.desc())
+    if scope_key and scope_key != "__ALL__":
+        stmt = stmt.where(EmissionRecord.scope_key == scope_key)
     if source:
         stmt = stmt.where(EmissionRecord.source == source)
     return list(db.scalars(stmt).all())
 
 
-def delete_all(db: Session) -> int:
-    records = list(db.scalars(select(EmissionRecord)).all())
+def delete_all(db: Session, scope_key: str | None = None) -> int:
+    """Only ever clears the caller's own scope unless an admin asks for all."""
+    stmt = select(EmissionRecord)
+    if scope_key and scope_key != "__ALL__":
+        stmt = stmt.where(EmissionRecord.scope_key == scope_key)
+    records = list(db.scalars(stmt).all())
     count = len(records)
     for r in records:
         db.delete(r)
