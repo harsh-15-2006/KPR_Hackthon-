@@ -2,7 +2,9 @@
 # Python version. Verified working on Python 3.14 (Windows).
 fastapi>=0.115
 uvicorn[standard]>=0.34
-pydantic>=2.11
+# [email] extra: routes/auth.py uses EmailStr, which needs email-validator
+# at runtime. It is never imported directly, so a source scan will not find it.
+pydantic[email]>=2.11
 pydantic-settings>=2.7
 SQLAlchemy>=2.0.36
 # psycopg v3 (not psycopg2) -- psycopg2-binary has no wheel for Python 3.13+.
