@@ -33,9 +33,15 @@ export const apiUrl = (path: string): string => `${API_ROOT}/api${path}`
 // Single Axios client. The browser talks ONLY to FastAPI -- never to Climatiq.
 const client = axios.create({
   baseURL: `${API_ROOT}/api`,
-  timeout: 30000,
+  // A spun-down free-tier backend takes about a minute to wake, so anything
+  // shorter than that reports a timeout for a server that is merely starting.
+  timeout: 90000,
   headers: { 'Content-Type': 'application/json' },
 })
+
+/** Budget for endpoints that make one external API call per row. */
+const SECONDS_PER_ROW = 8000
+const SLOW_CALL_MS = 180000
 
 export const TOKEN_KEY = 'cir.token'
 
@@ -87,9 +93,16 @@ export function toMessage(err: unknown): string {
       const field = first.loc ? first.loc[first.loc.length - 1] : ''
       return field ? `${field}: ${first.msg ?? 'Invalid value.'}` : (first.msg ?? 'Invalid value.')
     }
-    if (err.code === 'ECONNABORTED') return 'The request timed out. Please try again.'
+    if (err.code === 'ECONNABORTED') {
+      return (
+        'The request timed out. If the server was idle it can take about a ' +
+        'minute to wake up - try once more.'
+      )
+    }
     if (!err.response) {
-      return 'Cannot reach the backend. Is it running on http://127.0.0.1:8000 ?'
+      return API_ROOT
+        ? `Cannot reach the backend at ${API_ROOT}.`
+        : 'Cannot reach the backend. Is it running on http://127.0.0.1:8000 ?'
     }
     return `Request failed (${err.response.status}).`
   }
@@ -142,7 +155,11 @@ export const api = {
 
   importRows: (rows: CsvPreviewRow[], demo: boolean) =>
     client
-      .post<EmissionRecord[]>('/emissions/import', rows, { params: { demo } })
+      .post<EmissionRecord[]>('/emissions/import', rows, {
+        params: { demo },
+        // The server imports rows sequentially, calling Climatiq once per row.
+        timeout: Math.max(SLOW_CALL_MS, rows.length * SECONDS_PER_ROW),
+      })
       .then((r) => r.data),
 
   actions: (params: { source?: string; availability?: string; search?: string }) =>
@@ -176,7 +193,9 @@ export const api = {
 
   // ---------------- optimization ----------------
   runOptimization: (budget: number) =>
-    client.post<OptimizationRun>('/optimization/run', { budget }).then((r) => r.data),
+    client
+      .post<OptimizationRun>('/optimization/run', { budget }, { timeout: SLOW_CALL_MS })
+      .then((r) => r.data),
 
   latestOptimization: () =>
     client.get<OptimizationRun>('/optimization/latest').then((r) => r.data),
@@ -188,11 +207,16 @@ export const api = {
     action_overrides?: Record<string, Record<string, unknown>>
     extra_constraints?: Record<string, unknown>[]
     notes?: string | null
-  }) => client.post<ComparisonResult>('/scenarios', body).then((r) => r.data),
+  }) =>
+    client
+      .post<ComparisonResult>('/scenarios', body, { timeout: SLOW_CALL_MS })
+      .then((r) => r.data),
 
   // ---------------- re-optimization ----------------
   reoptimize: (body: { budget?: number | null; trigger?: string; trigger_detail?: string | null }) =>
-    client.post<ComparisonResult>('/reoptimization/run', body).then((r) => r.data),
+    client
+      .post<ComparisonResult>('/reoptimization/run', body, { timeout: SLOW_CALL_MS })
+      .then((r) => r.data),
 
   reoptHistory: () =>
     client.get<ReoptHistoryRow[]>('/reoptimization/history').then((r) => r.data),
