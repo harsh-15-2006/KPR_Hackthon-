@@ -481,8 +481,6 @@ carbon-reduction outcome **without overwriting the baseline**.
 
 ## 17. Team
 
-<!-- Replace the placeholders below with your real team details before the Git checkpoint. -->
-
 - **Team name:** TEAM FOURTITUDE
 - **Institution:** CIT
 - **Problem Statement:** SU-04 — Industrial Carbon Intelligence & Reduction Engine
