@@ -17,9 +17,22 @@ import type {
   SourceMeta,
 } from '../types'
 
+// Where FastAPI lives.
+//   dev  -> '' , so requests go to '/api/...' and Vite's proxy forwards them.
+//   prod -> VITE_API_BASE_URL, because the static build is served from a
+//           different origin than the API and a bare '/api' would resolve to
+//           the frontend's own domain.
+// Vite statically replaces import.meta.env.VITE_* at BUILD time, so changing
+// this value requires a rebuild, not just a restart. It is a public URL, not a
+// secret -- never put an API key in a VITE_ variable.
+const API_ROOT = (import.meta.env.VITE_API_BASE_URL ?? '').replace(/\/+$/, '')
+
+/** Absolute URL for links the browser follows directly (downloads, new tabs). */
+export const apiUrl = (path: string): string => `${API_ROOT}/api${path}`
+
 // Single Axios client. The browser talks ONLY to FastAPI -- never to Climatiq.
 const client = axios.create({
-  baseURL: '/api',
+  baseURL: `${API_ROOT}/api`,
   timeout: 30000,
   headers: { 'Content-Type': 'application/json' },
 })
@@ -230,6 +243,8 @@ export const api = {
   adminUnlockUser: (id: number) =>
     client.post(`/auth/admin/users/${id}/unlock`).then((r) => r.data),
 
-  reportCsvUrl: '/api/reports/csv',
-  reportHtmlUrl: '/api/reports/html',
+  // Absolute, because these are <a href> links the browser resolves itself --
+  // they do not pass through the Axios client's baseURL.
+  reportCsvUrl: apiUrl('/reports/csv'),
+  reportHtmlUrl: apiUrl('/reports/html'),
 }
