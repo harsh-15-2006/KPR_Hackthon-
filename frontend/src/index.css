@@ -1,11 +1,57 @@
 @import 'tailwindcss';
 
+/* =====================================================================
+   Design tokens.
+
+   Colours are defined once here and referenced everywhere else, so the
+   palette can be changed in one place instead of hunting hex values
+   through components. The hue is deliberately green-tinted: this is a
+   sustainability product and the interface should read as one.
+   ===================================================================== */
+
+@theme inline {
+  --font-sans: 'Manrope', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-display: 'Sora', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+}
+
 :root {
-  --bg: #f6f7f9;
+  --radius: 0.75rem;
+
+  /* surfaces */
+  --bg: #f6f8f7;
   --panel: #ffffff;
-  --border: #e4e7ec;
+  --sidebar: #f9fbfa;
+
+  /* text */
   --text: #101828;
+  --text-strong: #0b1a14;
   --muted: #667085;
+
+  /* lines */
+  --border: #e3e8e6;
+
+  /* brand — used for the active nav item, primary buttons, focus rings */
+  --primary: #047857;
+  --primary-hover: #036c4e;
+  --primary-soft: #ecfdf5;
+  --primary-ring: rgba(4, 120, 87, 0.18);
+
+  /* status */
+  --ok: #067647;
+  --ok-soft: #dcfae6;
+  --warn: #b54708;
+  --warn-soft: #fef0c7;
+  --danger: #b42318;
+  --danger-soft: #fee4e2;
+  --info: #175cd3;
+  --info-soft: #eff8ff;
+
+  /* charts — one hue per emission source, kept distinguishable */
+  --chart-1: #047857;
+  --chart-2: #2563eb;
+  --chart-3: #ea580c;
+  --chart-4: #7c3aed;
+  --chart-5: #65a30d;
 }
 
 html,
@@ -18,9 +64,14 @@ body {
   margin: 0;
   background: var(--bg);
   color: var(--text);
-  font-family: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto,
-    Helvetica, Arial, sans-serif;
+  font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Numbers in tables and KPI tiles must not jitter as they update. */
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
 }
 
 ::-webkit-scrollbar {
@@ -28,9 +79,35 @@ body {
   height: 10px;
 }
 ::-webkit-scrollbar-thumb {
-  background: #d0d5dd;
+  background: #d3dbd8;
   border-radius: 8px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #bcc7c3;
 }
 ::-webkit-scrollbar-track {
   background: transparent;
+}
+
+/* Visible keyboard focus, without a focus ring on mouse clicks. */
+:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+/* =====================================================================
+   Print.
+   The Reports page offers a printable view; without this the sidebar,
+   header and every banner would be printed with it.
+   ===================================================================== */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  main {
+    padding: 0 !important;
+  }
+  body {
+    background: #fff;
+  }
 }

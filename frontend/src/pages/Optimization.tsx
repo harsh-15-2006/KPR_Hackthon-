@@ -131,7 +131,7 @@ export default function Optimization() {
               step="any"
               value={budget}
               onChange={(e) => setBudget(e.target.value)}
-              className="w-full rounded-lg border border-[#d0d5dd] px-3 py-2 text-sm outline-none focus:border-[#2563eb]"
+              className="w-full rounded-lg border border-[#d0d5dd] px-3 py-2 text-sm outline-none focus:border-[var(--primary)] focus:ring-2 focus:ring-[var(--primary-ring)]"
             />
             <button
               onClick={doRun}
@@ -179,12 +179,12 @@ export default function Optimization() {
                 value={cName}
                 onChange={(e) => setCName(e.target.value)}
                 placeholder="Constraint name"
-                className="w-full rounded-lg border border-[#d0d5dd] px-2.5 py-1.5 text-[13px] outline-none focus:border-[#2563eb]"
+                className="w-full rounded-lg border border-[#d0d5dd] px-2.5 py-1.5 text-[13px] outline-none focus:border-[var(--primary)] focus:ring-2 focus:ring-[var(--primary-ring)]"
               />
               <select
                 value={cType}
                 onChange={(e) => setCType(e.target.value)}
-                className="w-full rounded-lg border border-[#d0d5dd] px-2.5 py-1.5 text-[13px] outline-none"
+                className="w-full rounded-lg border border-[#d0d5dd] px-2.5 py-1.5 text-[13px] outline-none focus:border-[var(--primary)] focus:ring-2 focus:ring-[var(--primary-ring)]"
               >
                 {TYPES.map((t) => (
                   <option key={t.v} value={t.v}>
@@ -197,7 +197,7 @@ export default function Optimization() {
                   <select
                     value={cSource}
                     onChange={(e) => setCSource(e.target.value)}
-                    className="flex-1 rounded-lg border border-[#d0d5dd] px-2.5 py-1.5 text-[13px] outline-none"
+                    className="flex-1 rounded-lg border border-[#d0d5dd] px-2.5 py-1.5 text-[13px] outline-none focus:border-[var(--primary)] focus:ring-2 focus:ring-[var(--primary-ring)]"
                   >
                     {ALL_SOURCES.map((s) => (
                       <option key={s} value={s}>
@@ -210,7 +210,7 @@ export default function Optimization() {
                   type="number"
                   value={cValue}
                   onChange={(e) => setCValue(e.target.value)}
-                  className="w-24 rounded-lg border border-[#d0d5dd] px-2.5 py-1.5 text-[13px] outline-none"
+                  className="w-24 rounded-lg border border-[#d0d5dd] px-2.5 py-1.5 text-[13px] outline-none focus:border-[var(--primary)] focus:ring-2 focus:ring-[var(--primary-ring)]"
                 />
                 <button
                   onClick={addConstraint}

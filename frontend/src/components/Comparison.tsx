@@ -24,8 +24,8 @@ export default function Comparison({ result }: { result: ComparisonResult }) {
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-        <Card className="p-5">
-          <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-[#667085]">
+        <Card className="p-5" style={{ background: '#f9fafb' }}>
+          <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">
             Baseline
           </p>
           {base ? (
@@ -46,8 +46,8 @@ export default function Comparison({ result }: { result: ComparisonResult }) {
           )}
         </Card>
 
-        <Card className="border-[#b2ddff] p-5">
-          <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-[#175cd3]">
+        <Card className="p-5" style={{ borderColor: 'var(--primary)', background: 'var(--primary-soft)' }}>
+          <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-[var(--primary)]">
             {result.name ? `Scenario — ${result.name}` : 'New run'}
           </p>
           <p className="text-2xl font-semibold tabular-nums">{scen.expected_reduction} tCO₂e</p>

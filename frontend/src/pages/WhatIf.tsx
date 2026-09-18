@@ -56,7 +56,7 @@ export default function WhatIf() {
             <input
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full rounded-lg border border-[#d0d5dd] px-3 py-2 text-sm outline-none focus:border-[#2563eb]"
+              className="w-full rounded-lg border border-[#d0d5dd] px-3 py-2 text-sm outline-none focus:border-[var(--primary)] focus:ring-2 focus:ring-[var(--primary-ring)]"
             />
           </div>
           <div>
@@ -67,7 +67,7 @@ export default function WhatIf() {
               step="any"
               value={budget}
               onChange={(e) => setBudget(e.target.value)}
-              className="w-32 rounded-lg border border-[#d0d5dd] px-3 py-2 text-sm outline-none focus:border-[#2563eb]"
+              className="w-32 rounded-lg border border-[#d0d5dd] px-3 py-2 text-sm outline-none focus:border-[var(--primary)] focus:ring-2 focus:ring-[var(--primary-ring)]"
             />
           </div>
           <div className="min-w-[180px] flex-1">
@@ -78,7 +78,7 @@ export default function WhatIf() {
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               placeholder="Why are you testing this?"
-              className="w-full rounded-lg border border-[#d0d5dd] px-3 py-2 text-sm outline-none focus:border-[#2563eb]"
+              className="w-full rounded-lg border border-[#d0d5dd] px-3 py-2 text-sm outline-none focus:border-[var(--primary)] focus:ring-2 focus:ring-[var(--primary-ring)]"
             />
           </div>
           <button

@@ -1,16 +1,23 @@
-import type { ReactNode } from 'react'
+import type { CSSProperties, ReactNode } from 'react'
 import { AlertTriangle, Info, Loader2 } from 'lucide-react'
 
 export function Card({
   children,
   className = '',
+  style,
 }: {
   children: ReactNode
   className?: string
+  /** Inline style wins over Tailwind class ordering.
+   *  Needed because a `border-[#x]` passed via className is emitted BEFORE
+   *  the base `border-[#e4e7ec]` in the compiled stylesheet, so at equal
+   *  specificity the base colour wins and the override silently does nothing. */
+  style?: CSSProperties
 }) {
   return (
     <div
-      className={`rounded-xl border border-[#e4e7ec] bg-white shadow-[0_1px_2px_rgba(16,24,40,0.05)] ${className}`}
+      style={style}
+      className={`rounded-xl border border-[var(--border)] bg-[var(--panel)] shadow-[0_1px_2px_rgba(16,24,40,0.05)] ${className}`}
     >
       {children}
     </div>
@@ -34,11 +41,13 @@ export function StatCard({
     <Card className="p-5">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <p className="text-[13px] font-medium text-[#667085]">{label}</p>
-          <p className="mt-2 truncate text-2xl font-semibold tracking-tight text-[#101828]">
+          <p className="text-[11px] font-semibold uppercase tracking-wider text-[var(--muted)]">
+            {label}
+          </p>
+          <p className="mt-2 truncate font-[family-name:var(--font-display)] text-2xl font-semibold tracking-tight text-[var(--text-strong)]">
             {value}
           </p>
-          {sub && <p className="mt-1 truncate text-xs text-[#667085]">{sub}</p>}
+          {sub && <p className="mt-1 truncate text-xs text-[var(--muted)]">{sub}</p>}
         </div>
         {icon && (
           <span
@@ -117,11 +126,45 @@ export function Spinner({ label = 'Loading' }: { label?: string }) {
   )
 }
 
-export function EmptyState({ title, hint }: { title: string; hint?: string }) {
+export function EmptyState({
+  title,
+  hint,
+  actionLabel,
+  actionTo,
+}: {
+  title: string
+  hint?: string
+  /** An empty state should always offer the next step, never just report nothing. */
+  actionLabel?: string
+  actionTo?: string
+}) {
   return (
     <div className="p-10 text-center">
       <p className="text-sm font-medium text-[#344054]">{title}</p>
-      {hint && <p className="mt-1 text-sm text-[#667085]">{hint}</p>}
+      {hint && <p className="mt-1 text-sm text-[var(--muted)]">{hint}</p>}
+      {actionLabel && actionTo && (
+        <a
+          href={actionTo}
+          className="mt-4 inline-flex items-center gap-1.5 rounded-lg bg-[var(--primary)] px-3.5 py-2 text-[13px] font-medium text-white hover:bg-[var(--primary-hover)]"
+        >
+          {actionLabel}
+        </a>
+      )}
+    </div>
+  )
+}
+
+/** Thin progress bar. Used for budget utilisation and import progress. */
+export function ProgressBar({ pct, tone = 'primary' }: { pct: number; tone?: string }) {
+  const clamped = Math.max(0, Math.min(100, pct))
+  const bg =
+    tone === 'warn' ? 'var(--warn)' : tone === 'danger' ? 'var(--danger)' : 'var(--primary)'
+  return (
+    <div className="h-2 w-full overflow-hidden rounded-full bg-[#e9eeec]">
+      <div
+        className="h-full rounded-full transition-[width] duration-300"
+        style={{ width: `${clamped}%`, background: bg }}
+      />
     </div>
   )
 }

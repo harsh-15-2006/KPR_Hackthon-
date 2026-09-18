@@ -1,6 +1,7 @@
 import {
   Bar,
   BarChart,
+  CartesianGrid,
   Cell,
   Legend,
   Pie,
@@ -71,6 +72,7 @@ export function SourceBar({ data }: { data: SourceBreakdown[] }) {
   return (
     <ResponsiveContainer width="100%" height={280}>
       <BarChart data={data} margin={{ top: 8, right: 8, left: 0, bottom: 4 }}>
+        <CartesianGrid strokeDasharray="3 3" stroke="#e3e8e6" vertical={false} />
         <XAxis
           dataKey="label"
           tick={{ fontSize: 12, fill: '#667085' }}

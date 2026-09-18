@@ -66,7 +66,7 @@ export default function ReductionActions() {
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search action name or description"
-                className="w-full rounded-lg border border-[#d0d5dd] py-2 pl-9 pr-3 text-sm outline-none focus:border-[#2563eb] focus:ring-2 focus:ring-[#2563eb]/15"
+                className="w-full rounded-lg border border-[#d0d5dd] py-2 pl-9 pr-3 text-sm outline-none focus:border-[var(--primary)] focus:ring-2 focus:ring-[var(--primary-ring)]"
               />
             </div>
           </div>
@@ -76,7 +76,7 @@ export default function ReductionActions() {
             <select
               value={source}
               onChange={(e) => setSource(e.target.value)}
-              className="rounded-lg border border-[#d0d5dd] px-3 py-2 text-sm outline-none focus:border-[#2563eb]"
+              className="rounded-lg border border-[#d0d5dd] px-3 py-2 text-sm outline-none focus:border-[var(--primary)] focus:ring-2 focus:ring-[var(--primary-ring)]"
             >
               <option value="all">All</option>
               {ALL_SOURCES.map((s) => (
@@ -94,7 +94,7 @@ export default function ReductionActions() {
             <select
               value={availability}
               onChange={(e) => setAvailability(e.target.value)}
-              className="rounded-lg border border-[#d0d5dd] px-3 py-2 text-sm capitalize outline-none focus:border-[#2563eb]"
+              className="rounded-lg border border-[#d0d5dd] px-3 py-2 text-sm capitalize outline-none focus:border-[var(--primary)] focus:ring-2 focus:ring-[var(--primary-ring)]"
             >
               {AVAILABILITY.map((a) => (
                 <option key={a} value={a} className="capitalize">

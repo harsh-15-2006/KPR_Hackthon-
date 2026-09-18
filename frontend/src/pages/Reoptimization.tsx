@@ -78,7 +78,7 @@ export default function Reoptimization() {
               value={budget}
               onChange={(e) => setBudget(e.target.value)}
               placeholder="unchanged"
-              className="w-40 rounded-lg border border-[#d0d5dd] px-3 py-2 text-sm outline-none focus:border-[#2563eb]"
+              className="w-40 rounded-lg border border-[#d0d5dd] px-3 py-2 text-sm outline-none focus:border-[var(--primary)] focus:ring-2 focus:ring-[var(--primary-ring)]"
             />
           </div>
           <div className="min-w-[220px] flex-1">
@@ -87,7 +87,7 @@ export default function Reoptimization() {
               value={detail}
               onChange={(e) => setDetail(e.target.value)}
               placeholder="e.g. new operational data received"
-              className="w-full rounded-lg border border-[#d0d5dd] px-3 py-2 text-sm outline-none focus:border-[#2563eb]"
+              className="w-full rounded-lg border border-[#d0d5dd] px-3 py-2 text-sm outline-none focus:border-[var(--primary)] focus:ring-2 focus:ring-[var(--primary-ring)]"
             />
           </div>
           <button
@@ -137,7 +137,7 @@ export default function Reoptimization() {
               </thead>
               <tbody>
                 {history.map((h) => (
-                  <tr key={h.reoptimization_id} className="border-b border-[#f2f4f7] last:border-0">
+                  <tr key={h.reoptimization_id} className="border-b border-[#f2f4f7] transition-colors last:border-0 hover:bg-[#f9fafb]">
                     <td className="px-5 py-2.5 text-[#475467]">
                       {h.created_at ? new Date(h.created_at).toLocaleString() : '-'}
                     </td>

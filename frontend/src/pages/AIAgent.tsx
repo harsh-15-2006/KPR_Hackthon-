@@ -119,7 +119,7 @@ export default function AIAgent() {
               onChange={(e) => setQ(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && !busy && ask(q)}
               placeholder="Ask about the data or the optimization…"
-              className="flex-1 rounded-lg border border-[#d0d5dd] px-3 py-2 text-sm outline-none focus:border-[#2563eb]"
+              className="flex-1 rounded-lg border border-[#d0d5dd] px-3 py-2 text-sm outline-none focus:border-[var(--primary)] focus:ring-2 focus:ring-[var(--primary-ring)]"
             />
             <button
               onClick={() => ask(q)}

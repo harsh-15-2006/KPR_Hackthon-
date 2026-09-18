@@ -201,7 +201,7 @@ export default function OperationalData({ demoMode }: { demoMode: boolean }) {
               <select
                 value={source}
                 onChange={(e) => setSource(e.target.value)}
-                className="w-full rounded-lg border border-[#d0d5dd] px-3 py-2 text-sm outline-none focus:border-[#2563eb]"
+                className="w-full rounded-lg border border-[#d0d5dd] px-3 py-2 text-sm outline-none focus:border-[var(--primary)] focus:ring-2 focus:ring-[var(--primary-ring)]"
               >
                 {sources.map((s) => (
                   <option key={s.source} value={s.source}>
@@ -219,7 +219,7 @@ export default function OperationalData({ demoMode }: { demoMode: boolean }) {
               <select
                 value={activityType}
                 onChange={(e) => setActivityType(e.target.value)}
-                className="w-full rounded-lg border border-[#d0d5dd] px-3 py-2 text-sm outline-none focus:border-[#2563eb]"
+                className="w-full rounded-lg border border-[#d0d5dd] px-3 py-2 text-sm outline-none focus:border-[var(--primary)] focus:ring-2 focus:ring-[var(--primary-ring)]"
               >
                 {(meta?.activity_types ?? []).map((t) => (
                   <option key={t} value={t}>
@@ -241,7 +241,7 @@ export default function OperationalData({ demoMode }: { demoMode: boolean }) {
                   value={activityValue}
                   onChange={(e) => setActivityValue(e.target.value)}
                   placeholder="e.g. 125000"
-                  className="w-full rounded-lg border border-[#d0d5dd] px-3 py-2 text-sm outline-none focus:border-[#2563eb]"
+                  className="w-full rounded-lg border border-[#d0d5dd] px-3 py-2 text-sm outline-none focus:border-[var(--primary)] focus:ring-2 focus:ring-[var(--primary-ring)]"
                 />
               </div>
               <div>
@@ -249,7 +249,7 @@ export default function OperationalData({ demoMode }: { demoMode: boolean }) {
                 <select
                   value={activityUnit}
                   onChange={(e) => setActivityUnit(e.target.value)}
-                  className="w-full rounded-lg border border-[#d0d5dd] px-3 py-2 text-sm outline-none focus:border-[#2563eb]"
+                  className="w-full rounded-lg border border-[#d0d5dd] px-3 py-2 text-sm outline-none focus:border-[var(--primary)] focus:ring-2 focus:ring-[var(--primary-ring)]"
                 >
                   {(meta?.allowed_units ?? []).map((u) => (
                     <option key={u} value={u}>
@@ -268,7 +268,7 @@ export default function OperationalData({ demoMode }: { demoMode: boolean }) {
                 value={period}
                 onChange={(e) => setPeriod(e.target.value)}
                 placeholder="e.g. 2026-Q1"
-                className="w-full rounded-lg border border-[#d0d5dd] px-3 py-2 text-sm outline-none focus:border-[#2563eb]"
+                className="w-full rounded-lg border border-[#d0d5dd] px-3 py-2 text-sm outline-none focus:border-[var(--primary)] focus:ring-2 focus:ring-[var(--primary-ring)]"
               />
             </div>
 
@@ -356,7 +356,7 @@ export default function OperationalData({ demoMode }: { demoMode: boolean }) {
                     </thead>
                     <tbody>
                       {preview.rows.map((r, i) => (
-                        <tr key={i} className="border-t border-[#f2f4f7]">
+                        <tr key={i} className="border-t border-[#f2f4f7] transition-colors hover:bg-[#f9fafb]">
                           <td className="px-4 py-1.5">{SOURCE_LABELS[r.source]}</td>
                           <td className="px-4 py-1.5 text-[#667085]">{r.activity_type}</td>
                           <td className="px-4 py-1.5 text-right tabular-nums">
@@ -407,7 +407,7 @@ export default function OperationalData({ demoMode }: { demoMode: boolean }) {
                   </thead>
                   <tbody>
                     {records.map((r) => (
-                      <tr key={r.id} className="border-t border-[#f2f4f7] align-top">
+                      <tr key={r.id} className="border-t border-[#f2f4f7] align-top transition-colors hover:bg-[#f9fafb]">
                         <td className="px-5 py-2.5">
                           <span className="inline-flex items-center gap-2">
                             <span

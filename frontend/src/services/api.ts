@@ -24,6 +24,46 @@ const client = axios.create({
   headers: { 'Content-Type': 'application/json' },
 })
 
+export const TOKEN_KEY = 'cir.token'
+
+export function getToken(): string | null {
+  try {
+    return localStorage.getItem(TOKEN_KEY)
+  } catch {
+    return null
+  }
+}
+
+export function setToken(token: string | null) {
+  try {
+    if (token) localStorage.setItem(TOKEN_KEY, token)
+    else localStorage.removeItem(TOKEN_KEY)
+  } catch {
+    /* private browsing - the in-memory session still works for this tab */
+  }
+}
+
+// Attach the bearer token to every request.
+client.interceptors.request.use((cfg) => {
+  const t = getToken()
+  if (t) cfg.headers.Authorization = `Bearer ${t}`
+  return cfg
+})
+
+// A 401 means the session is gone: clear it and send the user to sign in.
+client.interceptors.response.use(
+  (r) => r,
+  (err) => {
+    if (axios.isAxiosError(err) && err.response?.status === 401) {
+      setToken(null)
+      if (!window.location.pathname.startsWith('/login')) {
+        window.location.href = '/login'
+      }
+    }
+    return Promise.reject(err)
+  },
+)
+
 /** Turn any Axios failure into a plain, user-safe message. */
 export function toMessage(err: unknown): string {
   if (axios.isAxiosError(err)) {
@@ -164,6 +204,31 @@ export const api = {
     client.post(`/trust/records/${id}/approve`, { reviewer: 'reviewer' }).then((r) => r.data),
   trustReject: (id: number) =>
     client.post(`/trust/records/${id}/reject`, { reviewer: 'reviewer' }).then((r) => r.data),
+
+  // ---------------- auth ----------------
+  register: (body: {
+    company_name: string
+    email: string
+    password: string
+    full_name?: string | null
+    industry?: string | null
+    country?: string | null
+    grid_zone?: string | null
+  }) => client.post('/auth/register', body).then((r) => r.data),
+
+  login: (email: string, password: string) =>
+    client.post('/auth/login', { email, password }).then((r) => r.data),
+
+  me: () => client.get('/auth/me').then((r) => r.data),
+
+  // ---------------- admin ----------------
+  adminCompanies: () => client.get('/auth/admin/companies').then((r) => r.data),
+  adminUsers: () => client.get('/auth/admin/users').then((r) => r.data),
+  adminAudit: () => client.get('/auth/admin/audit').then((r) => r.data),
+  adminToggleCompany: (id: number) =>
+    client.post(`/auth/admin/companies/${id}/toggle`).then((r) => r.data),
+  adminUnlockUser: (id: number) =>
+    client.post(`/auth/admin/users/${id}/unlock`).then((r) => r.data),
 
   reportCsvUrl: '/api/reports/csv',
   reportHtmlUrl: '/api/reports/html',

@@ -1,4 +1,4 @@
-import { Info } from 'lucide-react'
+import { Database, FlaskConical, Flame, Info, Wind } from 'lucide-react'
 import { SourceBar, SourceDonut } from '../components/charts'
 import {
   Card,
@@ -57,10 +57,10 @@ export default function CarbonAnalysis() {
       ) : (
         <>
           <div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-            <StatCard label="Total CO₂e" value={formatCo2e(summary.total_co2e)} sub={`${summary.record_count} records`} />
-            <StatCard label="Highest source" value={summary.highest_source_label ?? '—'} sub={summary.highest_source_pct ? `${summary.highest_source_pct}%` : ''} accent="#ea580c" />
-            <StatCard label="From Climatiq API" value={String(measured)} sub="calculated via emission factors" accent="#0d9488" />
-            <StatCard label="Demo data" value={String(demo)} sub="illustrative, not measurements" accent="#b54708" />
+            <StatCard label="Total CO₂e" value={formatCo2e(summary.total_co2e)} sub={`${summary.record_count} records`} icon={<Wind size={18} />} />
+            <StatCard label="Highest source" value={summary.highest_source_label ?? '—'} sub={summary.highest_source_pct ? `${summary.highest_source_pct}%` : ''} icon={<Flame size={18} />} accent="#ea580c" />
+            <StatCard label="From Climatiq API" value={String(measured)} sub="calculated via emission factors" icon={<Database size={18} />} accent="#0d9488" />
+            <StatCard label="Demo data" value={String(demo)} sub="illustrative, not measurements" icon={<FlaskConical size={18} />} accent="#b54708" />
           </div>
 
           <div className="mb-4 flex items-start gap-2 rounded-lg border border-[#e4e7ec] bg-white p-3 text-[13px] text-[#475467]">
@@ -98,7 +98,7 @@ export default function CarbonAnalysis() {
                 </thead>
                 <tbody>
                   {records.map((r) => (
-                    <tr key={r.id} className="border-t border-[#f2f4f7] align-top">
+                    <tr key={r.id} className="border-t border-[#f2f4f7] align-top transition-colors hover:bg-[#f9fafb]">
                       <td className="px-5 py-2.5">
                         <span className="inline-flex items-center gap-2">
                           <span
