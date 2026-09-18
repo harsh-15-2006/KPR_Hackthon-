@@ -1,0 +1,13 @@
+source,activity_type,activity_value,activity_unit,period
+electricity,grid_electricity,125000,kWh,2026-Q1
+electricity,grid_electricity,98000,kWh,2026-Q2
+fuel,diesel,18000,L,2026-Q1
+fuel,furnace_oil,7500,L,2026-Q1
+fuel,natural_gas,4200,m3,2026-Q1
+logistics,road_freight,48000,t.km,2026-Q1
+logistics,rail_freight,32000,t.km,2026-Q1
+production,steel,240,t,2026-Q1
+production,cement,180,t,2026-Q1
+waste,landfill,85,t,2026-Q1
+waste,recycled,40,t,2026-Q1
+waste,organic,22,t,2026-Q1

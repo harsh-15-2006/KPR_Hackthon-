@@ -1,0 +1,13 @@
+# Versions are left open so pip resolves builds that ship wheels for your
+# Python version. Verified working on Python 3.14 (Windows).
+fastapi>=0.115
+uvicorn[standard]>=0.34
+pydantic>=2.11
+pydantic-settings>=2.7
+SQLAlchemy>=2.0.36
+# psycopg v3 (not psycopg2) -- psycopg2-binary has no wheel for Python 3.13+.
+psycopg[binary]>=3.2
+httpx>=0.28
+python-dotenv>=1.0
+python-multipart>=0.0.20
+pytest>=8.3

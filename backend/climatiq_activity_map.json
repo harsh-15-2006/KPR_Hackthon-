@@ -1,0 +1,24 @@
+{
+  "_comment": "Climatiq activity IDs, each VERIFIED by a live /data/v1/estimate call. Look up alternatives in the Climatiq Data Explorer (https://www.climatiq.io/data) - never guess an ID.",
+  "electricity": {
+    "activity_id": "electricity-supply_grid-source_supplier_mix",
+    "region": "IN",
+    "note": "Grid electricity. unit_type Energy -> energy/energy_unit."
+  },
+  "fuel": {
+    "activity_id": "fuel-type_diesel-fuel_use_na",
+    "note": "Diesel. unit_type Weight -> weight/weight_unit. Litres are converted using 0.8375 kg/L (typical diesel density)."
+  },
+  "logistics": {
+    "activity_id": "freight_vehicle-vehicle_type_commercial_truck-fuel_source_na-vehicle_weight_na-percentage_load_na",
+    "note": "Road freight. unit_type WeightOverDistance -> weight + distance. t.km is sent as weight=1 t, distance=N km."
+  },
+  "production": {
+    "activity_id": "metal_products-type_continuous_cast_steel_bloom_structural_steel_profile",
+    "note": "Steel. unit_type Weight -> weight/weight_unit."
+  },
+  "waste": {
+    "activity_id": "waste_management-type_municipal_waste_landfill_consumer_waste-disposal_method_landfill",
+    "note": "Municipal waste to landfill. unit_type Weight -> weight/weight_unit."
+  }
+}
