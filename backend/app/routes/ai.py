@@ -76,7 +76,11 @@ def chat(req: ChatRequest, db: Session = Depends(get_db)) -> dict:
         return {
             "available": True,
             "answer": result["answer"],
+            # `model` is the id that actually answered; when it differs from
+            # `requested_model` the primary was down and a fallback served it.
             "model": result["model"],
+            "requested_model": result["requested_model"],
+            "used_fallback": result["used_fallback"],
             "context_keys": result["context_keys"],
             "disclaimer": result["disclaimer"],
             "context": context,

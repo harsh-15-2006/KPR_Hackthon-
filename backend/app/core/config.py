@@ -48,6 +48,10 @@ class Settings(BaseSettings):
     # --- Gemini (explanation layer only) ---
     gemini_api_key: str = ""
     gemini_model: str = ""
+    # Ordered, comma-separated model ids tried when the primary model is
+    # overloaded (503), rate-limited (429) or missing (404). Blank = no
+    # fallback, which preserves the previous single-model behaviour.
+    gemini_fallback_models: str = ""
     gemini_enabled: bool = False
 
     # --- Auth ---
@@ -111,6 +115,21 @@ class Settings(BaseSettings):
     @property
     def gemini_configured(self) -> bool:
         return self.gemini_enabled and _is_set(self.gemini_api_key) and _is_set(self.gemini_model)
+
+    @property
+    def gemini_model_chain(self) -> list[str]:
+        """Primary model first, then configured fallbacks, in order.
+
+        Blanks are dropped and duplicates removed, so a mistyped .env
+        (trailing comma, repeated id) cannot produce an empty attempt or
+        waste a retry on the same model twice.
+        """
+        chain: list[str] = []
+        for raw in [self.gemini_model, *self.gemini_fallback_models.split(",")]:
+            mid = raw.strip()
+            if mid and mid not in chain:
+                chain.append(mid)
+        return chain
 
     # ---------- database ----------
 

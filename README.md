@@ -24,8 +24,10 @@ A plant with ₹1 crore for sustainability has more candidate projects than mone
 obvious approach — rank actions by cost-per-tonne and buy down the list until the money runs
 out — is **provably not optimal** when projects are indivisible.
 
-On our own demo data, that greedy approach spends ₹88L for 1,830 tCO₂e. The optimizer finds
-**₹98L for 1,930 tCO₂e** — **+100 tCO₂e from the same budget.** That gap is the entire project.
+On our own demo data with a ₹100L budget, that greedy approach spends ₹95L and reaches
+1,960 tCO₂e/yr. The optimizer spends the full **₹100L and reaches 2,040 tCO₂e/yr** —
+**+80 tCO₂e/yr from the same budget**, confirmed against an exhaustive search of all 1,024
+possible project subsets. That gap is the entire project.
 
 ---
 

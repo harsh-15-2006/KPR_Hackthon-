@@ -6,7 +6,8 @@ backend-generated context object and explains it in words. The optimizer
 is a narrator.
 
 Guardrails implemented here, not merely requested in a prompt:
-  * The model id is read from GEMINI_MODEL - never hardcoded.
+  * Model ids are read from GEMINI_MODEL and GEMINI_FALLBACK_MODELS -
+    never hardcoded. On 503/429/404 the next id in the chain is tried.
   * The context object is built by the backend and serialized as JSON, so
     the model cannot reach past what it was handed.
   * A hard system instruction forbids inventing values or overriding the
@@ -33,6 +34,27 @@ logger = get_logger(__name__)
 PROVIDER = "Gemini"
 SOURCE_NAME = "gemini"
 IS_CORE_DEPENDENCY = False   # the product works fully without AI
+
+# Worth retrying on the same model, then worth trying the next model.
+_TRANSIENT = (429, 500, 502, 503, 504)
+# Retries allowed on a model that still has a fallback behind it. Zero means
+# "try once, then fail over immediately" - the fastest path to an answer when
+# the failure is overload. The last model in the chain still gets max_retries.
+_FAILOVER_RETRIES = 0
+# A rejected key fails identically on every model - do not walk the chain.
+# Google reports an invalid key as 400 API_KEY_INVALID rather than 401, so the
+# code alone is not enough to classify it; see _is_fatal.
+_FATAL = (401, 403)
+_BAD_KEY_MARKERS = ("api key not valid", "api_key_invalid", "invalid api key")
+
+
+def _is_fatal(code: int | None, detail: str) -> bool:
+    """True when no other model in the chain could possibly succeed."""
+    if code in _FATAL:
+        return True
+    # A 400 is usually request-specific, but a rejected key also arrives as
+    # 400 - and that will fail identically on every model.
+    return code == 400 and any(m in detail.lower() for m in _BAD_KEY_MARKERS)
 
 SYSTEM_INSTRUCTION = """You are an industrial carbon intelligence assistant.
 
@@ -137,8 +159,9 @@ def _user_message(code: int | None, detail: str, model: str) -> str:
     if code == 503:
         return (
             f"Gemini model '{model}' is temporarily overloaded (503): {detail} "
-            "Retry shortly, or set GEMINI_MODEL to a less busy model such as "
-            "gemini-2.5-flash or gemini-flash-latest."
+            "Every id in GEMINI_MODEL + GEMINI_FALLBACK_MODELS was already tried. "
+            "Retry shortly, or add another verified id to GEMINI_FALLBACK_MODELS. "
+            "Avoid '-latest' aliases - Google hot-swaps them without notice."
         )
     if code == 404:
         return (
@@ -186,31 +209,58 @@ def explain(
         system_instruction=SYSTEM_INSTRUCTION, temperature=temperature
     )
 
-    # 503 ("high demand") and 429 are explicitly transient - Google's own
-    # message says spikes are usually temporary - so they are worth retrying.
-    last_exc: Exception | None = None
-    for attempt in range(max_retries + 1):
-        try:
-            resp = client.models.generate_content(
-                model=s.gemini_model, contents=prompt, config=cfg
-            )
+    # Try each model in the configured chain. Within a model, 503/429 are
+    # transient (Google's own message says spikes are usually temporary) so
+    # they are retried with backoff; once a model is exhausted we move to
+    # the next id rather than failing the whole request.
+    chain = s.gemini_model_chain
+    resp = None
+    used_model: str | None = None
+    last_code: int | None = None
+    last_detail = ""
+    last_model = chain[0]
+
+    for idx, model_id in enumerate(chain):
+        # Retrying an overloaded model is far worse than switching to a
+        # healthy one: measured, a 503 call costs 0.7-8.0s and still fails,
+        # while a working fallback answers in ~0.8s. So spend the retry
+        # budget only on the last model, where there is nowhere left to go.
+        is_last = idx == len(chain) - 1
+        attempts = max_retries if is_last else _FAILOVER_RETRIES
+        for attempt in range(attempts + 1):
+            try:
+                resp = client.models.generate_content(
+                    model=model_id, contents=prompt, config=cfg
+                )
+                used_model = model_id
+                break
+            except Exception as exc:  # noqa: BLE001 - SDK raises varied provider errors
+                last_code, last_detail = _error_detail(exc)
+                last_model = model_id
+                if last_code in _TRANSIENT and attempt < attempts:
+                    time.sleep(1.5 * (2 ** attempt))
+                    continue
+                break
+        if resp is not None:
             break
-        except Exception as exc:  # noqa: BLE001 - SDK raises varied provider errors
-            last_exc = exc
-            code, detail = _error_detail(exc)
-            if code in (429, 500, 502, 503, 504) and attempt < max_retries:
-                time.sleep(1.5 * (2 ** attempt))
-                continue
+        # A rejected key fails identically on every model, so stop rather
+        # than burning the whole chain on the same error.
+        if _is_fatal(last_code, last_detail):
+            break
+        if model_id != chain[-1]:
             logger.warning(
-                "Gemini call failed", extra={"event": "gemini", "status": str(code or "error")}
+                "Gemini model failed, trying next in chain",
+                extra={"event": "gemini", "status": str(last_code or "error")},
             )
-            raise IntegrationError(
-                _user_message(code, detail, s.gemini_model), SourceStatus.ERROR, PROVIDER, code
-            ) from exc
-    else:  # pragma: no cover - loop always breaks or raises
-        code, detail = _error_detail(last_exc) if last_exc else (None, "")
+
+    if resp is None:
+        logger.warning(
+            "Gemini call failed on every model in chain",
+            extra={"event": "gemini", "status": str(last_code or "error")},
+        )
         raise IntegrationError(
-            _user_message(code, detail, s.gemini_model), SourceStatus.ERROR, PROVIDER, code
+            _user_message(last_code, last_detail, last_model), SourceStatus.ERROR, PROVIDER,
+            last_code,
         )
 
     text = getattr(resp, "text", None)
@@ -221,7 +271,10 @@ def explain(
 
     return {
         "answer": text,
-        "model": s.gemini_model,
+        # The model that actually answered - not the one that was requested.
+        "model": used_model,
+        "requested_model": chain[0],
+        "used_fallback": used_model != chain[0],
         "provider": PROVIDER,
         "context_keys": [k for k, v in context.items() if v is not None],
         "disclaimer": (
@@ -243,9 +296,15 @@ def check_availability() -> dict[str, Any]:
             ),
             "model": s.gemini_model or None,
         }
+    chain = s.gemini_model_chain
     return {
         "provider": PROVIDER,
         "status": "CONFIGURED",
-        "message": "Gemini is configured. Availability is confirmed on first use.",
-        "model": s.gemini_model,
+        "message": (
+            "Gemini is configured. Availability is confirmed on first use. "
+            + (f"Fallback chain: {' -> '.join(chain)}." if len(chain) > 1
+               else "No fallback models configured.")
+        ),
+        "model": chain[0],
+        "model_chain": chain,
     }
